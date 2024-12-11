@@ -1,13 +1,23 @@
 import express, { json } from "express";
 import mongoose from "mongoose";
-import auth from "./routes/auth.js"
+import authRoutes from "./routes/auth.js"
+import userRoutes from "./routes/user.js"
+import postRoutes from "./routes/post.js"
 import { connectMondoDB } from "./db/connectMongoDB.js";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import { v2 as cloudinary } from "cloudinary";
 
 if(process.env.NODE_ENV !== "production") { //if the env is not propduction, get values from the .env file we defined
     dotenv.config();
 }
+
+//configuring cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_KEY,
+    api_secret: process.env.CLOUDINARY_SECRET
+})
 
 const app = express();
 
@@ -16,7 +26,9 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
 
-app.use("/api/auth", auth);
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/posts", postRoutes);
 
 app.get('/',(req,res)=> {
     res.send("Hello");
