@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import authRoutes from "./routes/auth.js"
 import userRoutes from "./routes/user.js"
 import postRoutes from "./routes/post.js"
+import notificationRoutes from "./routes/notification.js"
 import { connectMondoDB } from "./db/connectMongoDB.js";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
@@ -29,6 +30,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.get('/',(req,res)=> {
     res.send("Hello");
