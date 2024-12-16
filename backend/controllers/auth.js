@@ -36,7 +36,7 @@ export const login = async (req,res)=>{
 export const signup = async (req,res)=>{
     try {
         const {fullName, email, password, username} = req.body;
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; //pattern matching email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;//pattern matching email
         if(!emailRegex.test(email)) {
             return res.status(400).json({error: "Invalid Email Format!"});
         }
