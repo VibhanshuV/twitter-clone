@@ -64,7 +64,8 @@ export const likeUnlikePost = async (req,res) => {
         if(hasLiked) { //already liked then unlike it
             await Post.findByIdAndUpdate(postId,{$pull: {likes:userId}});
             await User.findByIdAndUpdate(userId,{$pull: {likedPosts: postId}});
-            res.status(200).json({message: `Post: ${postId} unliked.`});
+            const updatedLikes = post.likes.filter((id)=> id.toString()!==userId.toString());
+            res.status(200).json(updatedLikes);
         } else { //liek the post
             post.likes.push(userId);
             await post.save();
@@ -79,7 +80,7 @@ export const likeUnlikePost = async (req,res) => {
                 await newNotification.save();
             }
             
-            res.status(200).json({message: `Post: ${postId} liked.`});
+            res.status(200).json(post.likes);
         }
 
 

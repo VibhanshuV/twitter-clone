@@ -80,58 +80,65 @@ export const followUnfollowUser = async (req,res) => {
 }
 
 export const updateUserProfile = async (req,res) => {
-    try {
-        const {username, fullName, currPassword, newPassword, bio, link,email} = req.body;
-        let {profileImg, coverImg} = req.body;
-        const userId = req.user._id;
-        let user = await User.findById(userId);
-        
-        if(!user) return res.status(404).json({message: "User not found."});
+    const { fullName, email, username, currentPassword, newPassword, bio, link } = req.body;
+	let { profileImg, coverImg } = req.body;
 
-        if((!newPassword && currPassword) || (!currPassword && newPassword)) return res.status(400).json({message: "Please provide both the current password and the new password."});
-        
-        if(currPassword && newPassword) {
-            console.log(email);
-            const isMatching = await bcrypt.compare(currPassword, user.password);
-            if(!isMatching)  return res.status(400).json({message: "Current Password is incorrect."});
-            if(newPassword.length <6) {
-                return res.status(400).json({error: "Password must be at least 6 characters long"})
-            }
-        }
-            
-            if(profileImg) {
-                //delete old profile image from cloudinary if it exists
-                if(user.profileImg) {
-                    //https://res.cloudinary.com?sdsd?image/upload/sndkasdbnak/imagId.png - we need only the image ID form this to delete 
-                    await cloudinary.uploader.destroy(user.profileImg.split("/").pop().split(".")[0]); // we extract the image id bit from url.
-                }
-                const uploadedResponse = await cloudinary.uploader.upload(profileImg);
-                profileImg = uploadedResponse.secure_url;
-            }
-            if(coverImg) {
-                if(user.coverImg) {
-                    //https://res.cloudinary.com?sdsd?image/upload/sndkasdbnak/imagId.png - we need only the image ID form this to delete 
-                    await cloudinary.uploader.destroy(user.coverImg.split("/").pop().split(".")[0]); // we extract the image id bit from url.
-                }
-                const uploadedResponse = await cloudinary.uploader.upload(coverImg);
-                coverImg = uploadedResponse.secure_url;
-            }
+	const userId = req.user._id;
 
-            //update all profile values
-            user.fullName = fullName || user.fullName;
-            user.email = email || user.email;
-            user.username = username || user.username;
-            user.bio = bio || user.bio;
-            user.link = link || user.link;
-            user.profileImg = profileImg || user.profileImg;
-            user.coverImg = coverImg || user.coverImg;
+	try {
+		let user = await User.findById(userId);
+		if (!user) return res.status(404).json({ message: "User not found" });
 
-            user = await user.save();
-            user.password = null;
-            return res.status(200).json(user);
-        
-    } catch (err) {
-        console.log("Error in updateUserProfile controller", err.message);
-        res.status(500).json({error: "Internal Server Error"});
-    }
+		if ((!newPassword && currentPassword) || (!currentPassword && newPassword)) {
+			return res.status(400).json({ error: "Please provide both current password and new password" });
+		}
+
+		if (currentPassword && newPassword) {
+			const isMatch = await bcrypt.compare(currentPassword, user.password);
+			if (!isMatch) return res.status(400).json({ error: "Current password is incorrect" });
+			if (newPassword.length < 6) {
+				return res.status(400).json({ error: "Password must be at least 6 characters long" });
+			}
+
+			const salt = await bcrypt.genSalt(10);
+			user.password = await bcrypt.hash(newPassword, salt);
+		}
+
+		if (profileImg) {
+			if (user.profileImg) {
+				// https://res.cloudinary.com/dyfqon1v6/image/upload/v1712997552/zmxorcxexpdbh8r0bkjb.png
+				await cloudinary.uploader.destroy(user.profileImg.split("/").pop().split(".")[0]);
+			}
+
+			const uploadedResponse = await cloudinary.uploader.upload(profileImg);
+			profileImg = uploadedResponse.secure_url;
+		}
+
+		if (coverImg) {
+			if (user.coverImg) {
+				await cloudinary.uploader.destroy(user.coverImg.split("/").pop().split(".")[0]);
+			}
+
+			const uploadedResponse = await cloudinary.uploader.upload(coverImg);
+			coverImg = uploadedResponse.secure_url;
+		}
+
+		user.fullName = fullName || user.fullName;
+		user.email = email || user.email;
+		user.username = username || user.username;
+		user.bio = bio || user.bio;
+		user.link = link || user.link;
+		user.profileImg = profileImg || user.profileImg;
+		user.coverImg = coverImg || user.coverImg;
+
+		user = await user.save();
+
+		// password should be null in response
+		user.password = null;
+
+		return res.status(200).json(user);
+	} catch (error) {
+		console.log("Error in updateUser: ", error.message);
+		res.status(500).json({ error: error.message });
+	}
 }
