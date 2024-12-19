@@ -1,5 +1,4 @@
 import express, { json } from "express";
-import mongoose from "mongoose";
 import authRoutes from "./routes/auth.js"
 import userRoutes from "./routes/user.js"
 import postRoutes from "./routes/post.js"
@@ -8,10 +7,10 @@ import { connectMondoDB } from "./db/connectMongoDB.js";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { v2 as cloudinary } from "cloudinary";
+import path from "path";
 
-if(process.env.NODE_ENV !== "production") { //if the env is not propduction, get values from the .env file we defined
-    dotenv.config();
-}
+dotenv.config();
+
 
 //configuring cloudinary
 cloudinary.config({
@@ -21,9 +20,11 @@ cloudinary.config({
 })
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+const __dirname = path.resolve();
 
 // app.use(methodOverride('_method'));
-app.use(express.json({limit: "6mb"})); //the limit is 100kb by default, so to upload images we need a higher limit
+app.use(express.json({limit: "5mb"})); //the limit is 100kb by default, so to upload images we need a higher limit
 //limit should not be roo high to prevent ddos.
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
@@ -33,11 +34,15 @@ app.use("/api/user", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-app.get('/',(req,res)=> {
-    res.send("Hello");
-})
+const isProd = (process.env.NODE_ENV.trim() === "production");
+if (isProd) {
+	app.use(express.static(path.resolve(__dirname, "frontend","dist")));
+	app.get("*", (req, res) => {
+       
+		res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+	});
+}
 
-const PORT = process.env.PORT || 5000;
 app.listen(PORT,()=> {
     console.log("Server Running on port: ", PORT);
     connectMondoDB();
