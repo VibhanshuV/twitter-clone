@@ -23,7 +23,7 @@ cloudinary.config({
 const app = express();
 
 // app.use(methodOverride('_method'));
-app.use(express.json({limit: "5mb"})); //the limit is 100kb by default, so to upload images we need a higher limit
+app.use(express.json({limit: "6mb"})); //the limit is 100kb by default, so to upload images we need a higher limit
 //limit should not be roo high to prevent ddos.
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());

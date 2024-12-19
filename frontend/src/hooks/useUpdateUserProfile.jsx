@@ -5,14 +5,14 @@ const useUpdateUserProfile = () => {
 	const queryClient = useQueryClient();
 
 	const { mutateAsync: updateProfile, isPending: isUpdatingProfile } = useMutation({
-		mutationFn: async (formData) => {
+		mutationFn: async ({coverImg, profileImg, fullName, username, email, bio, link, newPassword, currentPassword}) => {
 			try {
-				const res = await fetch(`/api/users/update`, {
+				const res = await fetch(`/api/user/update`, {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
 					},
-					body: JSON.stringify(formData),
+					body: JSON.stringify({coverImg, profileImg, fullName, username, email, bio, link, newPassword, currentPassword}),
 				});
 				const data = await res.json();
 				if (!res.ok) {

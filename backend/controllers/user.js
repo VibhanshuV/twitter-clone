@@ -120,6 +120,7 @@ export const updateUserProfile = async (req,res) => {
 			}
 
 			const uploadedResponse = await cloudinary.uploader.upload(coverImg);
+            console.log(uploadedResponse);
 			coverImg = uploadedResponse.secure_url;
 		}
 

@@ -40,6 +40,10 @@ const userSchema = new Schema({
         type: String,
         default: ""
     },
+    coverImg: {
+        type: String,
+        default: ""
+    },
     bio: {
         type: String,
         default: ""
